@@ -1,0 +1,57 @@
+# Clash for Study Version:1.0.0
+
+version: '3.6'
+
+services:
+
+  clash:
+
+    container_name: clash.core
+
+    image: dreamacro/clash:latest
+
+    volumes:
+      - ./conf/config.yaml:/root/.config/clash/config.yaml
+
+    # expose:
+    #   - 9090
+
+    ports:
+      - 7890:7890
+
+    restart: unless-stopped
+
+    networks:
+      - clanet
+      
+      
+  clash_web:
+
+    container_name: clash.web
+
+    image: haishanh/yacd:old
+    #image: ghcr.io/haishanh/yacd:master
+    volumes:
+      - ./conf/proxy.conf:/etc/nginx/proxy.conf
+      - ./conf/proxy.ws.conf:/etc/nginx/proxy.ws.conf
+      - ./conf/default.conf:/etc/nginx/http.d/default.conf
+
+    depends_on:
+      - clash
+
+    ports:
+      - 7080:80
+
+    restart: unless-stopped
+
+    networks:
+      - clanet
+
+
+networks:
+  clanet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+       - subnet: 172.16.0.0/24
